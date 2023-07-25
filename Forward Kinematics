@@ -1,0 +1,83 @@
+//Forward kinematics
+#include <math.h>
+
+// Define robot arm parameters
+float l1 = 1.374;     
+float l2 = 12;      
+float l3 = 11.965;   
+float l4 = 9.887;    
+float l5 = 1.4;      
+float l6 = 1.5; 
+
+// Define joint angles (in radians)
+float theta1 = 0.0;
+float theta2 = 0.0;
+float theta3 = 0.0;
+float theta4 = 0.0;
+float theta5 = 0.0;
+float theta6 = 0.0;
+
+// Define end effector position
+float x = 0.0;
+float y = 0.0;
+float z = 0.0;
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Update joint angles
+  if (Serial.available() > 0) {
+    // Read the input from the user
+    String input = Serial.readStringUntil('\n');
+
+    // Parse the input into x, y, and z coordinates
+    int comma1 = input.indexOf(",");
+    int comma2 = input.indexOf(",", comma1+1);
+    int comma3 = input.indexOf(",",comma2+1);
+    int comma4 = input.indexOf(",",comma3+1);
+    theta1 = input.substring(0, comma1).toFloat();//Reads the first value entered in the string
+    theta2 = input.substring(comma1+1, comma2).toFloat();//Reads the second value entered after the first comma 
+    theta3 = input.substring(comma2+1).toFloat();//Reads next value after the 2nd comma 
+    theta4 = input.substring(comma2+1, comma3).toFloat();//Reads next value after the 3rd comma 
+    theta5 = input.substring(comma3+1).toFloat();//Reads next value after the 4th comma 
+    theta6 = input.substring(comma3+1, comma4).toFloat();//Reads last value
+  
+  // Calculate forward kinematics
+  float c1 = cos(theta1);
+  float c2 = cos(theta2);
+  float c3 = cos(theta3);
+  float c4 = cos(theta4);
+  float c5 = cos(theta5);
+  float c6 = cos(theta6);
+  
+  float s1 = sin(theta1);
+  float s2 = sin(theta2);
+  float s3 = sin(theta3);
+  float s4 = sin(theta4);
+  float s5 = sin(theta5);
+  float s6 = sin(theta6);
+  
+  float px = l1*c1*c2 + l2*c1*c2*c3 + l3*c1*c2*c3*c4 + l4*c1*c2*c3*c4*c5 + l5*c1*c2*c3*c4*c5*c6;
+  float py = l1*s1*c2 + l2*s1*c2*c3 + l3*s1*c2*c3*c4 + l4*s1*c2*c3*c4*c5 + l5*s1*c2*c3*c4*c5*c6;
+  float pz = l1*s2 + l2*s2*c3 + l3*s2*c3*c4 + l4*s2*c3*c4*c5 + l5*s2*c3*c4*c5*c6;
+  
+  // Update end effector position
+  x = px;
+  y = py;
+  z = pz;
+  
+  // Output end effector position
+  Serial.print("X: ");
+  Serial.print(x);
+  Serial.print(" Y: ");
+  Serial.print(y);
+  Serial.print(" Z: ");
+  Serial.println(z);
+  
+  // Delay for stability
+  delay(100);
+}
+}
